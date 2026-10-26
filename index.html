@@ -15,10 +15,15 @@
       --warning: #eab308;
       --danger: #ef4444;
       --ai-purple: #c084fc;
+      --border-color: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
@@ -26,6 +31,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
     }
 
     .container {
@@ -38,8 +44,10 @@
       justify-content: space-between;
       align-items: center;
       padding-bottom: 20px;
-      border-bottom: 1px solid #334155;
+      border-bottom: 1px solid var(--border-color);
       margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
     }
 
     .badge {
@@ -49,6 +57,8 @@
       border-radius: 12px;
       font-weight: bold;
       font-size: 0.85rem;
+      display: inline-block;
+      transition: background-color 0.3s ease;
     }
 
     .card {
@@ -56,7 +66,8 @@
       border-radius: 10px;
       padding: 20px;
       margin-bottom: 20px;
-      border: 1px solid #334155;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
     button {
@@ -67,22 +78,40 @@
       border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: all 0.2s ease;
     }
 
     button:hover {
       opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
     }
 
     input, textarea, select {
       width: 100%;
       padding: 10px;
-      margin: 8px 0 16px;
+      margin: 6px 0 16px;
       border-radius: 6px;
-      border: 1px solid #334155;
+      border: 1px solid var(--border-color);
       background: #0f172a;
       color: var(--text);
-      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: 2px solid var(--accent);
+      border-color: transparent;
     }
 
     /* Section Tabs */
@@ -92,12 +121,14 @@
       margin-bottom: 20px;
       overflow-x: auto;
       padding-bottom: 5px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-color) transparent;
     }
 
     .tab-btn {
       background: #1e293b;
       color: var(--text-muted);
-      border: 1px solid #334155;
+      border: 1px solid var(--border-color);
       padding: 8px 14px;
       border-radius: 6px;
       cursor: pointer;
@@ -135,9 +166,12 @@
     }
 
     .ai-bar-label {
-      width: 130px;
+      width: 140px;
       color: var(--text-muted);
       text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .ai-bar-track {
@@ -152,13 +186,14 @@
       height: 100%;
       background: var(--ai-purple);
       border-radius: 6px;
-      transition: width 0.5s ease-in-out;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .post-item {
       border-left: 4px solid var(--accent);
-      padding-left: 12px;
+      padding-left: 16px;
       margin-bottom: 16px;
+      transition: opacity 0.3s ease;
     }
 
     .post-date {
@@ -176,6 +211,7 @@
       margin-bottom: 6px;
       font-weight: bold;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .hidden {
@@ -188,10 +224,10 @@
   <div class="container">
     <header>
       <div>
-        <h1 style="margin: 0;">StreamKids-Data</h1>
+        <h1 style="margin: 0; font-size: 1.8rem;">StreamKids-Data</h1>
         <p style="color: var(--text-muted); margin: 5px 0 0 0;">Platform Status, AI Insights & Data Hub</p>
       </div>
-      <div>
+      <div style="display: flex; align-items: center;">
         <span id="status-badge" class="badge">Operational</span>
         <button id="auth-btn" style="margin-left: 10px;">Admin Login</button>
       </div>
@@ -199,16 +235,16 @@
 
     <!-- SECTION NAVIGATION TABS -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('all')">🌐 All Sections</button>
-      <button class="tab-btn" onclick="switchTab('status')">⚡ System Status</button>
-      <button class="tab-btn" onclick="switchTab('metrics')">📊 Version Metrics</button>
-      <button class="tab-btn" onclick="switchTab('performance')">🚀 Performance Data</button>
-      <button class="tab-btn" onclick="switchTab('announcements')">📢 Announcements</button>
+      <button class="tab-btn active" onclick="switchTab('all', event)">🌐 All Sections</button>
+      <button class="tab-btn" onclick="switchTab('status', event)">⚡ System Status</button>
+      <button class="tab-btn" onclick="switchTab('metrics', event)">📊 Version Metrics</button>
+      <button class="tab-btn" onclick="switchTab('performance', event)">🚀 Performance Data</button>
+      <button class="tab-btn" onclick="switchTab('announcements', event)">📢 Announcements</button>
     </div>
 
     <!-- ADMIN LOGIN MODAL -->
     <div id="login-section" class="card hidden">
-      <h3>Admin Authentication</h3>
+      <h3 style="margin-top: 0;">Admin Authentication</h3>
       <p style="color: var(--text-muted); font-size: 0.9rem;">Authorized account: <b>skibidiw63@gmail.com</b></p>
       
       <label for="admin-email">Email Address</label>
@@ -222,8 +258,8 @@
 
     <!-- ADMIN CONTROL PANEL -->
     <div id="admin-panel" class="card hidden" style="border-color: var(--accent);">
-      <h3>⚡ StreamKids Admin Data & Posting Panel</h3>
-      <p style="font-size: 0.85rem; color: var(--text-muted);">Logged in as <b>skibidiw63@gmail.com</b></p>
+      <h3 style="margin-top: 0;">⚡ StreamKids Admin Data & Posting Panel</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Logged in as <b id="user-email-display">skibidiw63@gmail.com</b></p>
       
       <label for="target-section">Select Section to Post Data On</label>
       <select id="target-section">
@@ -247,7 +283,7 @@
         <option value="Offline">Offline / Crash (Red)</option>
       </select>
 
-      <div style="display: flex; gap: 10px;">
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
         <button id="publish-btn">Publish Update & Generate AI Graph</button>
         <button id="logout-btn" style="background: #475569; color: #fff;">Logout</button>
       </div>
@@ -255,15 +291,15 @@
 
     <!-- DATA READING & FEED CONTAINER -->
     <main>
-      <h2 id="feed-heading">Platform Feed & Data Logs</h2>
+      <h2 id="feed-heading" style="font-size: 1.3rem; margin-bottom: 15px;">Platform Feed & Data Logs</h2>
       <div id="feed-container">
         
         <!-- Default Initial Log Item -->
         <div class="card post-item" data-section="announcements">
           <span class="section-tag">Announcements</span>
           <div class="post-date">October 26, 2026</div>
-          <h3>StreamKids Modern Release V5 Live</h3>
-          <p>Official release update active. Audio track "Pixel Sunset.mp3" online. V4 and standard V5 preparing for sunset period next month.</p>
+          <h3 style="margin: 8px 0;">StreamKids Modern Release V5 Live</h3>
+          <p style="margin-top: 0; color: #cbd5e1; line-height: 1.5;">Official release update active. Audio track "Pixel Sunset.mp3" online. V4 and standard V5 preparing for sunset period next month.</p>
           
           <div class="ai-graph-box">
             <div style="font-size: 0.8rem; color: var(--ai-purple); font-weight: bold;">✨ AI Data Parser & Graph Insight</div>
@@ -271,17 +307,17 @@
               <div class="ai-bar-row">
                 <span class="ai-bar-label">Release Stability</span>
                 <div class="ai-bar-track"><div class="ai-bar-fill" style="width: 98%;"></div></div>
-                <span>98%</span>
+                <span style="width: 35px; text-align: right;">98%</span>
               </div>
               <div class="ai-bar-row">
                 <span class="ai-bar-label">Audio Integration</span>
                 <div class="ai-bar-track"><div class="ai-bar-fill" style="width: 100%;"></div></div>
-                <span>100%</span>
+                <span style="width: 35px; text-align: right;">100%</span>
               </div>
               <div class="ai-bar-row">
                 <span class="ai-bar-label">Migration Readiness</span>
                 <div class="ai-bar-track"><div class="ai-bar-fill" style="width: 85%;"></div></div>
-                <span>85%</span>
+                <span style="width: 35px; text-align: right;">85%</span>
               </div>
             </div>
           </div>
@@ -331,6 +367,11 @@
       const email = document.getElementById("admin-email").value.trim().toLowerCase();
       const pass = document.getElementById("admin-pass").value;
 
+      if (!email || !pass) {
+        alert("Please fill in both email and password.");
+        return;
+      }
+
       if (email !== AUTHORIZED_EMAIL) {
         alert("Access Denied: Email is not authorized as admin.");
         return;
@@ -369,39 +410,44 @@
     // AI Text-to-Graph Parser Function
     function generateAIGraphMetrics(text) {
       const lower = text.toLowerCase();
-      // Intelligent score evaluation based on keywords in the admin's post
+      
       let score1 = 85, score2 = 90, score3 = 75;
+      let label1 = "System Health Index", label2 = "Data Efficiency", label3 = "Processing Load";
 
       if (lower.includes("maintenance") || lower.includes("shutdown")) {
         score1 = 40; score2 = 60; score3 = 30;
-      } else if (lower.includes("fast") || lower.includes("optimized") || lower.includes("live")) {
+        label1 = "Service Availability"; label2 = "Maintenance Progress"; label3 = "System Capacity";
+      } else if (lower.includes("fast") || lower.includes("optimized") || lower.includes("live") || lower.includes("v5")) {
         score1 = 98; score2 = 95; score3 = 92;
-      } else if (lower.includes("error") || lower.includes("bug")) {
+        label1 = "Execution Speed"; label2 = "Optimization Rate"; label3 = "User Satisfaction";
+      } else if (lower.includes("error") || lower.includes("bug") || lower.includes("crash")) {
         score1 = 55; score2 = 70; score3 = 50;
+        label1 = "Error Resolution"; label2 = "Stability Grade"; label3 = "Fallback Active";
       }
 
-      // Add a slight pseudo-random variation based on text length
+      // Add a slight pseudo-random variation based on text length for visual dynamics
       score1 = Math.min(100, Math.max(20, score1 + (text.length % 15) - 7));
       score2 = Math.min(100, Math.max(20, score2 + (text.length % 10) - 5));
+      score3 = Math.min(100, Math.max(20, score3 + (text.length % 8) - 4));
 
       return `
         <div class="ai-graph-box">
           <div style="font-size: 0.8rem; color: var(--ai-purple); font-weight: bold;">✨ AI Data Parser & Graph Insight</div>
           <div class="ai-bar-container">
             <div class="ai-bar-row">
-              <span class="ai-bar-label">System Health Index</span>
+              <span class="ai-bar-label">${label1}</span>
               <div class="ai-bar-track"><div class="ai-bar-fill" style="width: ${score1}%;"></div></div>
-              <span>${score1}%</span>
+              <span style="width: 35px; text-align: right;">${score1}%</span>
             </div>
             <div class="ai-bar-row">
-              <span class="ai-bar-label">Data Efficiency</span>
+              <span class="ai-bar-label">${label2}</span>
               <div class="ai-bar-track"><div class="ai-bar-fill" style="width: ${score2}%;"></div></div>
-              <span>${score2}%</span>
+              <span style="width: 35px; text-align: right;">${score2}%</span>
             </div>
             <div class="ai-bar-row">
-              <span class="ai-bar-label">Processing Load</span>
+              <span class="ai-bar-label">${label3}</span>
               <div class="ai-bar-track"><div class="ai-bar-fill" style="width: ${score3}%;"></div></div>
-              <span>${score3}%</span>
+              <span style="width: 35px; text-align: right;">${score3}%</span>
             </div>
           </div>
         </div>
@@ -429,16 +475,17 @@
       // Create Feed Post Card
       const postCard = document.createElement("div");
       postCard.className = "card post-item";
-      postCard.setAttribute("data-section", section === "all" ? "announcements" : section);
+      const targetSecTag = section === "all" ? "announcements" : section;
+      postCard.setAttribute("data-section", targetSecTag);
       
-      const now = new Date().toLocaleString();
+      const now = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       const aiGraphHTML = generateAIGraphMetrics(content);
       
       postCard.innerHTML = `
         <span class="section-tag">${section.toUpperCase()}</span>
         <div class="post-date">${now}</div>
-        <h3>${title}</h3>
-        <p>${content}</p>
+        <h3 style="margin: 8px 0;">${title}</h3>
+        <p style="margin-top: 0; color: #cbd5e1; line-height: 1.5;">${content}</p>
         ${aiGraphHTML}
       `;
 
@@ -450,25 +497,27 @@
       alert("Update published and AI graph generated successfully!");
     });
 
-    // Tab Filtering Logic for Reading Data Sections
-    window.switchTab = function(sectionName) {
-      // Highlight active button
+    // Tab Filtering Logic for Reading Data Sections (Bound to window scope)
+    window.switchTab = function(sectionName, event) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+      }
 
-      document.getElementById('feed-heading').innerText = sectionName === 'all' ? 'Platform Feed & Data Logs' : `${sectionName.toUpperCase()} Logs`;
+      document.getElementById('feed-heading').innerText = sectionName === 'all' 
+        ? 'Platform Feed & Data Logs' 
+        : `${sectionName.toUpperCase()} Logs`;
 
-      // Filter post cards
       const posts = feedContainer.querySelectorAll('.post-item');
       posts.forEach(post => {
         const postSec = post.getAttribute('data-section');
         if (sectionName === 'all' || postSec === sectionName) {
-          post.style.display = 'block';
+          post.classList.remove('hidden');
         } else {
-          post.style.display = 'none';
+          post.classList.add('hidden');
         }
       });
-    }
+    };
   </script>
 </body>
 </html>
