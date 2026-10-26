@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StreamKids Data & Status Hub</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #38bdf8;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --warning: #eab308;
+      --danger: #ef4444;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #334155;
+      margin-bottom: 20px;
+    }
+
+    .badge {
+      background: var(--success);
+      color: #000;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid #334155;
+    }
+
+    button {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0 16px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: var(--text);
+      box-sizing: border-box;
+    }
+
+    .post-item {
+      border-left: 4px solid var(--accent);
+      padding-left: 12px;
+      margin-bottom: 16px;
+    }
+
+    .post-date {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1 style="margin: 0;">StreamKids-Data</h1>
+        <p style="color: var(--text-muted); margin: 5px 0 0 0;">Platform Status & Data Feed</p>
+      </div>
+      <div>
+        <span id="status-badge" class="badge">Operational</span>
+        <button id="auth-btn" style="margin-left: 10px;">Admin Login</button>
+      </div>
+    </header>
+
+    <!-- ADMIN LOGIN MODAL / SECTION -->
+    <div id="login-section" class="card hidden">
+      <h3>Admin Authentication</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Authorized account: <b>skibidiw63@gmail.com</b></p>
+      
+      <label for="admin-email">Email Address</label>
+      <input type="email" id="admin-email" placeholder="skibidiw63@gmail.com">
+      
+      <label for="admin-pass">Password</label>
+      <input type="password" id="admin-pass" placeholder="Enter Firebase password">
+      
+      <button id="login-btn">Sign In with Firebase</button>
+    </div>
+
+    <!-- ADMIN CONTROL PANEL (Only visible after Firebase login) -->
+    <div id="admin-panel" class="card hidden" style="border-color: var(--accent);">
+      <h3>⚡ StreamKids Admin Panel</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Logged in as <b id="user-display">skibidiw63@gmail.com</b></p>
+      
+      <label for="post-title">Update Title</label>
+      <input type="text" id="post-title" placeholder="e.g., November Maintenance Notice">
+      
+      <label for="post-content">Update Content / Log Notes</label>
+      <textarea id="post-content" rows="4" placeholder="Type platform updates or system status notes here..."></textarea>
+      
+      <label for="system-status-select">System Status Flag</label>
+      <select id="system-status-select">
+        <option value="Operational">Operational (Green)</option>
+        <option value="Maintenance">Maintenance (Yellow)</option>
+        <option value="Offline">Offline / Crash (Red)</option>
+      </select>
+
+      <div style="display: flex; gap: 10px;">
+        <button id="publish-btn">Publish Update</button>
+        <button id="logout-btn" style="background: #475569; color: #fff;">Logout</button>
+      </div>
+    </div>
+
+    <!-- PUBLIC ANNOUNCEMENT FEED -->
+    <main>
+      <h2>Platform Feed & Logs</h2>
+      <div id="feed-container">
+        <!-- Default Initial Log -->
+        <div class="card post-item">
+          <div class="post-date">October 26, 2026</div>
+          <h3>StreamKids Modern Release V5 Live</h3>
+          <p>Official release update active. Audio track "Pixel Sunset.mp3" online. V4 and standard V5 preparing for sunset period next month.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- FIREBASE SDKs (v10 Modular) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // 1. REPLACE THIS WITH YOUR FIREBASE PROJECT CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyAn0QkwVVmb47CnHbd7mg6Kfq0bhzEpDPo",
+      authDomain: "streamkids-data.firebaseapp.com",
+      projectId: "streamkids-data",
+      storageBucket: "streamkids-data.firebasestorage.app",
+      messagingSenderId: "801974786174",
+      appId: "1:801974786174:web:35c432c0a5733fa84c202f"
+    };
+
+    // 2. Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const AUTHORIZED_EMAIL = "skibidiw63@gmail.com";
+
+    // DOM Elements
+    const authBtn = document.getElementById("auth-btn");
+    const loginSection = document.getElementById("login-section");
+    const adminPanel = document.getElementById("admin-panel");
+    const loginBtn = document.getElementById("login-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const publishBtn = document.getElementById("publish-btn");
+    const statusBadge = document.getElementById("status-badge");
+    const feedContainer = document.getElementById("feed-container");
+
+    // Toggle Login Form
+    authBtn.addEventListener("click", () => {
+      loginSection.classList.toggle("hidden");
+    });
+
+    // Handle Firebase Login
+    loginBtn.addEventListener("click", async () => {
+      const email = document.getElementById("admin-email").value.trim().toLowerCase();
+      const pass = document.getElementById("admin-pass").value;
+
+      if (email !== AUTHORIZED_EMAIL) {
+        alert("Access Denied: Email is not authorized as admin.");
+        return;
+      }
+
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        alert("Signed in successfully!");
+      } catch (error) {
+        alert("Firebase Auth Error: " + error.message);
+      }
+    });
+
+    // Handle Firebase Logout
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        alert("Logged out successfully.");
+      } catch (error) {
+        alert("Error signing out: " + error.message);
+      }
+    });
+
+    // Monitor Firebase Auth State
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.email.toLowerCase() === AUTHORIZED_EMAIL) {
+        loginSection.classList.add("hidden");
+        adminPanel.classList.remove("hidden");
+        authBtn.innerText = "Admin Active";
+        authBtn.style.background = "#22c55e";
+      } else {
+        adminPanel.classList.add("hidden");
+        authBtn.innerText = "Admin Login";
+        authBtn.style.background = "#38bdf8";
+      }
+    });
+
+    // Publish Feed Update
+    publishBtn.addEventListener("click", () => {
+      const title = document.getElementById("post-title").value.trim();
+      const content = document.getElementById("post-content").value.trim();
+      const status = document.getElementById("system-status-select").value;
+
+      if (!title || !content) {
+        alert("Please enter both a title and content.");
+        return;
+      }
+
+      // Update Header Status Badge
+      statusBadge.innerText = status;
+      if (status === "Operational") statusBadge.style.background = "var(--success)";
+      else if (status === "Maintenance") statusBadge.style.background = "var(--warning)";
+      else statusBadge.style.background = "var(--danger)";
+
+      // Prepend New Update to Feed
+      const postCard = document.createElement("div");
+      postCard.className = "card post-item";
+      const now = new Date().toLocaleString();
+      
+      postCard.innerHTML = `
+        <div class="post-date">${now}</div>
+        <h3>${title}</h3>
+        <p>${content}</p>
+      `;
+
+      feedContainer.prepend(postCard);
+
+      // Clear Form Inputs
+      document.getElementById("post-title").value = "";
+      document.getElementById("post-content").value = "";
+      alert("Update published to StreamKids-Data!");
+    });
+  </script>
+</body>
+</html>
